@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: muzz <muzz@student.42.fr>                  +#+  +:+       +#+         #
+#    By: abin-moh <abin-moh@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/01/14 17:07:50 by muzz              #+#    #+#              #
-#    Updated: 2025/01/14 18:12:26 by muzz             ###   ########.fr        #
+#    Created: 2025/02/03 10:11:11 by abin-moh          #+#    #+#              #
+#    Updated: 2025/02/03 10:43:26 by abin-moh         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,39 +16,43 @@ CC = cc
 CFLAGS = -Wall -Wextra -Werror
 RM = rm -f
 
-LIBFT_DIR = ./libft
-LIBFT = $(LIBFT_DIR)/libft.a
-
-SRC = main.c \
-      pipex.c 
+SRC = main.c              \
+      pipex.c             \
+      exec_child_helper.c \
+	  pipex_helper.c      \
+      ft_memcpy.c         \
+      ft_printf.c         \
+      ft_putchar.c        \
+      ft_putnbr.c         \
+      ft_putnbr_hex_lower.c \
+      ft_putnbr_hex_upper.c \
+      ft_putnbr_unsigned.c \
+      ft_putptr.c         \
+      ft_putstr.c         \
+      ft_split.c          \
+      ft_strchr.c         \
+      ft_strdup.c         \
+      ft_strjoin.c        \
+      ft_strlen.c         \
+      ft_strncmp.c        \
+      ft_substr.c
 
 OBJ = $(SRC:.c=.o)
 
-%.o: %.c
+%.o: %.c pipex.h ft_printf.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Target to build the program
 all: $(NAME)
 
-# Linking the program with libft
-$(NAME): $(OBJ) $(LIBFT)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJ) $(LIBFT)
+$(NAME): $(OBJ)
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJ)
 
-$(LIBFT):
-	make -C $(LIBFT_DIR)
-
-# Target to clean object files
 clean:
 	$(RM) $(OBJ)
-	make -C $(LIBFT_DIR) clean
 
-# Target to clean both the object files and the libft library
 fclean: clean
 	$(RM) $(NAME)
-	make -C $(LIBFT_DIR) fclean
 
-# Rebuild everything
 re: fclean all
 
-# Include libft make rules
 .PHONY: all clean fclean re

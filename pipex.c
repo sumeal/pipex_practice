@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: muzz <muzz@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: abin-moh <abin-moh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/14 15:41:37 by muzz              #+#    #+#             */
-/*   Updated: 2025/01/14 17:45:06 by muzz             ###   ########.fr       */
+/*   Updated: 2025/02/03 16:42:22 by abin-moh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,84 +26,89 @@ char	*get_long_path(char **envp)
 	return (NULL);
 }
 
-char	*check_path(char **split_path, char *cmd)
+char	*get_path(char **envp, char *cmd, int i)
 {
-	int		i;
 	char	*path;
+	char	**split_path;
 
-	i = 0;
-	while (split_path[i])
+	if (cmd[0] == '"' && cmd[ft_strlen(cmd) - 1] == '"')
+		cmd = ft_substr(cmd, 1, ft_strlen(cmd) - 2);
+	if (access(cmd, F_OK | X_OK) == 0)
+		return (ft_strdup(cmd));
+	path = get_long_path(envp);
+	split_path = ft_split(path, ':');
+	if (!path || !split_path)
+		return (NULL);
+	if (get_path2(split_path, i))
 	{
-		path = ft_strjoin(split_path[i], "/");
-		path = ft_strjoin(path, cmd);
-		if (access(path, F_OK) == 0)
+		free_split(split_path);
+		return (path);
+	}
+	free_split(split_path);
+	return (NULL);
+}
+
+char	*get_path2(char **split, int i)
+{
+	char	*path;
+	char	*tmp;
+
+	while (split[++i])
+	{
+		if (!split[i + 1])
+			break ;
+		tmp = ft_strjoin(split[i], "/");
+		path = ft_strjoin(tmp, split[i + 1]);
+		free(tmp);
+		if (access(path, F_OK | X_OK) == 0)
 			return (path);
 		free(path);
-		i++;
 	}
 	return (NULL);
 }
 
-char	*get_path(char **envp, char *cmd)
+void	exec_child(int input_fd, int output_fd, char *cmd, char **envp)
 {
+	char	**cmd_split;
 	char	*path;
-	char	**split_path;
-	
-	path = get_long_path(envp);
-	split_path = ft_split(path, ':');
-	path = check_path(split_path, cmd);
-	return (path);
+
+	cmd_split = ft_split(cmd, ' ');
+	path = get_path(envp, cmd_split[0], -1);
+	if (!path)
+	{
+		ft_printf("%s: command not found\n", cmd_split[0]);
+		cleanup_and_exit(cmd_split, path, 127);
+	}
+	if (dup2(input_fd, STDIN_FILENO) == -1
+		|| dup2(output_fd, STDOUT_FILENO) == -1)
+		handle_error_and_exit(cmd_split, path, "dup2", 1);
+	close(input_fd);
+	close(output_fd);
+	execve(path, cmd_split, envp);
+	handle_error_and_exit(cmd_split, path, "execve", 1);
 }
 
-void	pipex(int fd1, int fd2, char **argv, char **envp)
+void	pipex(int infile, int outfile, char **argv, char **envp)
 {
 	int		pfd[2];
-	char	*path;
-	char	**cmd1;
-	char	**cmd2;
-	pid_t	fork1;
-	pid_t	fork2;
-	
-	cmd1 = ft_split(argv[2], ' ');
-	cmd2 = ft_split(argv[3], ' ');	
+	pid_t	pids[2];
+
 	if (pipe(pfd) == -1)
+		handle_error("pipe");
+	pids[0] = fork();
+	if (pids[0] == 0)
 	{
-		perror("Error pipe\n");
-		exit(1);
-	}
-	if ((fork1 = fork()) == -1)
-	{
-		perror("Error fork\n");
-		exit(1);
-	}
-	if (fork1 == 0)
-	{
-		path = get_path(envp, cmd1[0]);
 		close(pfd[0]);
-		dup2(fd1, 0);
-		close(fd1);
-		dup2(pfd[1], 1);
-		close(pfd[1]);
-		execve(path, cmd1, envp);
+		exec_child(infile, pfd[1], argv[2], envp);
 	}
-	if ((fork2 = fork()) == -1)
+	waitpid(pids[0], NULL, 0);
+	pids[1] = fork();
+	if (pids[1] == 0)
 	{
-		perror("Error fork\n");
-		exit(1);
-	}
-	if (fork2 == 0)
-	{
-		path = get_path(envp, cmd2[0]);
 		close(pfd[1]);
-		dup2(fd2, 1);
-		close(fd2);
-		dup2(pfd[0], 0);
-		close(pfd[0]);
-		execve(path, cmd2, envp);
+		exec_child(pfd[0], outfile, argv[3], envp);
 	}
 	close(pfd[0]);
 	close(pfd[1]);
-	waitpid(fork1, NULL, 0);
-	waitpid(fork2, NULL, 0);
-	return ;
+	waitpid(pids[1], NULL, 0);
 }
