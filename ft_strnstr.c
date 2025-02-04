@@ -1,29 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   pipex_helper.c                                     :+:      :+:    :+:   */
+/*   ft_strnstr.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abin-moh <abin-moh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/03 10:36:18 by abin-moh          #+#    #+#             */
-/*   Updated: 2025/02/04 10:43:33 by abin-moh         ###   ########.fr       */
+/*   Created: 2024/11/11 16:14:35 by abin-moh          #+#    #+#             */
+/*   Updated: 2025/02/04 13:23:34 by abin-moh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "pipex.h"
 
-void	handle_error(const char *msg)
+char	*ft_strnstr(const char *big, const char *little, size_t len)
 {
-	perror(msg);
-	exit(1);
-}
+	size_t	i;
+	size_t	j;
 
-char	**special_split(char *cmd)
-{
-	char	**cmd_split;
-
-	cmd_split = NULL;
-	if (cmd[0] == '"' && cmd[ft_strlen(cmd) - 1] == '"')
-		cmd_split[0] = ft_substr(cmd, 1, ft_strlen(cmd) - 2);
-	return (cmd_split);
+	if (*little == '\0')
+		return ((char *)big);
+	i = 0;
+	while (i < len && big[i])
+	{
+		j = 0;
+		while (i + j < len && big [i + j] && big[i + j] == little[j])
+		{
+			j ++;
+			if (little[j] == '\0')
+				return ((char *)&big[i]);
+		}
+		i++;
+	}
+	return (NULL);
 }

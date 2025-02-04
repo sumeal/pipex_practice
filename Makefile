@@ -6,7 +6,7 @@
 #    By: abin-moh <abin-moh@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/03 10:11:11 by abin-moh          #+#    #+#              #
-#    Updated: 2025/02/03 10:43:26 by abin-moh         ###   ########.fr        #
+#    Updated: 2025/02/04 12:28:43 by abin-moh         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -35,7 +35,8 @@ SRC = main.c              \
       ft_strjoin.c        \
       ft_strlen.c         \
       ft_strncmp.c        \
-      ft_substr.c
+      ft_substr.c         \
+      ft_strnstr.c        
 
 OBJ = $(SRC:.c=.o)
 
