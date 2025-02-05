@@ -1,58 +1,32 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: abin-moh <abin-moh@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/02/03 10:11:11 by abin-moh          #+#    #+#              #
-#    Updated: 2025/02/04 12:28:43 by abin-moh         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
-
 NAME = pipex
 
+LIBFT_DIR = ./libft
+LIBFT = $(LIBFT_DIR)/libft.a
+
 CC = cc
-CFLAGS = -Wall -Wextra -Werror
-RM = rm -f
+CFLAGS = -Wall -Wextra -Werror -I $(LIBFT_DIR) -g
 
-SRC = main.c              \
-      pipex.c             \
-      exec_child_helper.c \
-	  pipex_helper.c      \
-      ft_memcpy.c         \
-      ft_printf.c         \
-      ft_putchar.c        \
-      ft_putnbr.c         \
-      ft_putnbr_hex_lower.c \
-      ft_putnbr_hex_upper.c \
-      ft_putnbr_unsigned.c \
-      ft_putptr.c         \
-      ft_putstr.c         \
-      ft_split.c          \
-      ft_strchr.c         \
-      ft_strdup.c         \
-      ft_strjoin.c        \
-      ft_strlen.c         \
-      ft_strncmp.c        \
-      ft_substr.c         \
-      ft_strnstr.c        
+SRCS_DIR = ./srcs/
+SRCS = $(SRCS_DIR)pipex.c \
+       $(SRCS_DIR)execute.c
 
-OBJ = $(SRC:.c=.o)
+OBJS = $(SRCS:.c=.o)
 
-%.o: %.c pipex.h ft_printf.h
-	$(CC) $(CFLAGS) -c $< -o $@
+$(LIBFT):
+	make -C $(LIBFT_DIR)
+
+$(NAME): $(OBJS) $(LIBFT)
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LIBFT)
 
 all: $(NAME)
 
-$(NAME): $(OBJ)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJ)
-
 clean:
-	$(RM) $(OBJ)
+	rm -f $(OBJS)
+	make clean -C $(LIBFT_DIR)
 
 fclean: clean
-	$(RM) $(NAME)
+	rm -f $(NAME)
+	make fclean -C $(LIBFT_DIR)
 
 re: fclean all
 
